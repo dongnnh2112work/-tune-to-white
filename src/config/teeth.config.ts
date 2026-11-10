@@ -5,9 +5,7 @@
  *   toothWhiteSrc   3D pearl-white tooth (RGBA). Reused on every round,
  *                   scaled/rotated per `layout`.
  *   backgroundSrc   Portrait 1080×1920 spotlight plate.
- *                   TEMP: `/teeth/bg_spotlight_temp.webp`
- *                   When the final plate lands, change this ONE path to
- *                   `/teeth/bg_spotlight.png` (or `.webp`). Do not scatter
+ *                   Official: `/teeth/bg_spotlight.webp`. Do not scatter
  *                   the filename across components.
  *
  * Optional per-round drop-in (same slots as models.config):
@@ -24,8 +22,8 @@ export type ToothLayoutId = "solo" | "pair" | "cluster";
 
 export const teethAssets = {
   toothWhiteSrc: "/teeth/tooth_white.webp",
-  /** TEMP spotlight plate. Switch to `/teeth/bg_spotlight.png` when ready. */
-  backgroundSrc: "/teeth/bg_spotlight_temp.webp",
+  /** Official 1080×1920 spotlight plate. */
+  backgroundSrc: "/teeth/bg_spotlight.webp",
 } as const;
 
 export type ToothRoundConfig = Omit<ModelConfig, "whiteSrc"> & {

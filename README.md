@@ -66,7 +66,7 @@ Edit **one file**: `src/config/teeth.config.ts`.
 | Setting | File | Notes |
 | --- | --- | --- |
 | `teethAssets.toothWhiteSrc` | `/public/teeth/tooth_white.webp` | 3D pearl tooth, RGBA. Reused on solo/pair/cluster (scaled/rotated). |
-| `teethAssets.backgroundSrc` | `/public/teeth/bg_spotlight_temp.webp` | **TEMP** 1080×1920 spotlight plate. When the final bg lands, change this one path to `/teeth/bg_spotlight.png` (or `.webp`). |
+| `teethAssets.backgroundSrc` | `/public/teeth/bg_spotlight.webp` | Official 1080×1920 spotlight plate. |
 | Per-round `whiteSrc` | optional | Full 1080×1920 scene; skips compositing. |
 
 Ivory-marble stain is generated in code and **clipped to the tooth PNG alpha**. Clean % is sampled only where that alpha is opaque. Optional `yellowSrc` still works if a stained render is pixel-aligned.
