@@ -1,10 +1,16 @@
+import { PLACEHOLDER } from "@/config/placeholders.config";
+
 export const gameConfig = {
   title: "TUNE TO WHITE",
   brand: "Close Up",
   agency: "LINKED",
+  /**
+   * End-screen slogan. Values come from `placeholders.config.ts`
+   * (PLACEHOLDER — not client-approved). Edit that file, not overlays.
+   */
   slogan: {
-    line1: "WHITE NOW",
-    line2: "Nụ cười trắng sáng — tức thì.",
+    line1: PLACEHOLDER.endSloganLine1,
+    line2: PLACEHOLDER.endSloganLine2,
   },
   idlePrompt: "STAND HERE & WAVE",
   idlePromptVi: "ĐỨNG ĐÂY · VẪY TAY",

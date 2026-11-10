@@ -38,13 +38,10 @@ test("full mouse playthrough + screenshots", async ({ page }) => {
 
   const origin = toScreen(teeth.x, teeth.y);
   await page.mouse.move(origin.x, origin.y);
-  for (let i = 0; i < 18; i++) {
-    const ang = (i / 18) * Math.PI * 2;
-    const r = teeth.radius * (0.15 + (i % 5) * 0.12);
-    const p = toScreen(teeth.x + Math.cos(ang) * r, teeth.y + Math.sin(ang) * r);
-    await page.mouse.move(p.x, p.y, { steps: 4 });
-  }
-  await page.waitForTimeout(300);
+  const park = toScreen(90, 160);
+  await page.mouse.move(park.x, park.y);
+  await page.evaluate(() => window.__TUNE__!.partialWipe(0.42));
+  await page.waitForTimeout(250);
   await shot(page, "02-play-midwipe.png");
 
   await page.evaluate(() => window.__TUNE__!.forceClean());

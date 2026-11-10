@@ -40,6 +40,21 @@ google-chrome --kiosk --autoplay-policy=no-user-gesture-required \
 
 App **không** gọi mạng lúc runtime. WASM + model MediaPipe nằm trong `/public/mediapipe` (copy lúc `npm install`). Font Google chỉ tải lúc **build**.
 
+## PLACEHOLDER copy
+
+End-screen lines **"WHITE NOW"** and **"Nụ cười trắng sáng — tức thì."** are **not client-approved**. They live in **one file**, clearly marked:
+
+`src/config/placeholders.config.ts`
+
+Replace that file when the client signs off. Do not hard-code slogan text in overlays. `game.config.ts` re-exports the same values as `slogan.line1 / line2`. Palette/fonts: `src/theme/theme.ts`.
+
+## Secrets & data — none in this repo
+
+- **No API keys, tokens, passwords, `.env` secrets, or credentials** are stored here.
+- No analytics, no remote APIs, no third-party runtime calls.
+- Play counters use `localStorage` key `tune-to-white-stats` (anonymous numbers only). **No camera frames, names, or other personal data.**
+- Model portraits are AI-generated event assets, not photographs of identifiable real people.
+
 ## Thay ảnh người mẫu
 
 1. Bỏ file 9:16 vào `public/models/` (webp/jpg/png). Nên giữ ≤ 1080×1920.
@@ -59,8 +74,6 @@ Mỗi round:
 **Auto mask:** MediaPipe FaceLandmarker (inner lip) + lọc sáng trong miệng. Preview/export: `/tools/mask`.
 
 Placeholder cũ (illustration, không phải người thật) đã được thay bằng 3 round ảnh dự án. Cơ chế config không đổi — drop file + sửa `models.config.ts`.
-
-Slogan end-screen: `src/config/game.config.ts` → `slogan.line1 / line2`. Màu/font: `src/theme/theme.ts`.
 
 ## Staff
 

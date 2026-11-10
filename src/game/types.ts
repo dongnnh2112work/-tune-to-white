@@ -22,6 +22,7 @@ export type DebugApi = {
   getTeethCentroid: () => { x: number; y: number; radius: number };
   getClean: () => number;
   forceClean: () => void;
+  partialWipe: (fraction: number) => void;
   setMouse: (on: boolean) => void;
   getModelIndex: () => number;
 };

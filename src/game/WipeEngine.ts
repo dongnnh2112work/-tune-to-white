@@ -292,4 +292,35 @@ export class WipeEngine {
     const s = this.imageToStage(this.mask.cx, this.mask.cy);
     this.particles.spawnBurst(s.x, s.y);
   }
+
+  /** Wipe the left `fraction` of the teeth bbox — used for mid-wipe captures. */
+  partialWipe(fraction = 0.45) {
+    if (!this.eraseCtx || !this.erase || !this.mask) return;
+    const { canvas: mc, ctx: mx } = this.ensureTmp();
+    mx.clearRect(0, 0, mc.width, mc.height);
+    mx.drawImage(this.mask.canvas, 0, 0);
+    const data = mx.getImageData(0, 0, mc.width, mc.height);
+    let minX = mc.width;
+    let maxX = 0;
+    for (let x = 0; x < mc.width; x++) {
+      for (let y = 0; y < mc.height; y++) {
+        if (data.data[(y * mc.width + x) * 4 + 3] > 40) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          break;
+        }
+      }
+    }
+    const cut = minX + (maxX - minX) * Math.max(0, Math.min(1, fraction));
+    mx.clearRect(0, 0, mc.width, mc.height);
+    mx.drawImage(this.mask.canvas, 0, 0);
+    mx.globalCompositeOperation = "destination-in";
+    mx.fillStyle = "#fff";
+    mx.fillRect(0, 0, cut, mc.height);
+    mx.globalCompositeOperation = "source-over";
+    this.eraseCtx.globalCompositeOperation = "source-over";
+    this.eraseCtx.clearRect(0, 0, this.erase.width, this.erase.height);
+    this.eraseCtx.drawImage(mc, 0, 0);
+    this.lastClean = fraction;
+  }
 }

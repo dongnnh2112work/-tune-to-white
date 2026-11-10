@@ -301,6 +301,10 @@ export default function KioskGame() {
         engineRef.current?.forceClean();
         setPhaseBoth("win");
       },
+      partialWipe: (fraction) => {
+        engineRef.current?.partialWipe(fraction);
+        engineRef.current?.draw();
+      },
       setMouse: (on) => {
         mouseModeRef.current = on;
         setMouseMode(on);

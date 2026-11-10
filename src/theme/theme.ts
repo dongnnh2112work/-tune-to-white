@@ -1,13 +1,12 @@
 /**
  * Close Up × TUNE TO WHITE brand tokens.
- * Logo navy sampled from WHITE NOW lockup; red/teal from classic Close Up.
+ * Palette: Close Up red + teal/aqua (fresh). No navy app surfaces.
  */
 export const STAGE = { width: 1080, height: 1920 } as const;
 
 export const colors = {
-  navy: "#1B2A7A",
-  navyDeep: "#0E1648",
-  navyInk: "#070B1C",
+  tealInk: "#042824",
+  tealDeep: "#0A3D38",
   red: "#E10600",
   redHot: "#FF3B30",
   teal: "#00C4B3",
@@ -15,10 +14,11 @@ export const colors = {
   mint: "#A8F6E8",
   foam: "#F4FFFD",
   gold: "#F6D36B",
-  stain: "#C48A22",
-  stainDeep: "#8A5A12",
+  stainIvory: "#E8D4A4",
+  stainTan: "#B18448",
+  stainUmbra: "#7A5228",
   white: "#FFFFFF",
-  ink: "#0B1220",
+  ink: "#042824",
 } as const;
 
 export const fonts = {
