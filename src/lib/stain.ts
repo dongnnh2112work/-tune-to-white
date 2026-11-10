@@ -100,13 +100,16 @@ export function generateStainLayer(
       const tr = img.data[i];
       const tg = img.data[i + 1];
       const tb = img.data[i + 2];
-      const k = look === "marble" ? 0.48 + amount * 0.22 : 0.42 + amount * 0.4;
+      const k = look === "marble" ? 0.56 + amount * 0.26 : 0.42 + amount * 0.4;
       img.data[i] = Math.round(tr * (1 - k) + tr * mulR * k + grain * 8);
       img.data[i + 1] = Math.round(tg * (1 - k) + tg * mulG * k + grain * 4);
       img.data[i + 2] = Math.round(tb * (1 - k) + tb * mulB * k);
-      img.data[i + 3] = Math.round(Math.min(255, ma * (look === "marble" ? 0.55 + amount * 0.28 : 0.48 + amount * 0.4)));
+      img.data[i + 3] = Math.round(Math.min(255, ma * (look === "marble" ? 0.62 + amount * 0.28 : 0.48 + amount * 0.4)));
     }
   }
   ctx.putImageData(img, 0, 0);
+  ctx.globalCompositeOperation = "destination-in";
+  ctx.drawImage(mask, 0, 0, w, h);
+  ctx.globalCompositeOperation = "source-over";
   return canvas;
 }

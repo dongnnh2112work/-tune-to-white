@@ -1,24 +1,32 @@
 /**
  * Teeth-only rounds (no human face).
  *
- * Default: procedural glossy 3D tooth icons (SVG path + canvas shaders:
- * marble veining, spec highlights, blue/purple rim light) on a dark
- * fabric background. No photos of people. No training-doc crops.
+ * Shared assets (`teethAssets`):
+ *   toothWhiteSrc   3D pearl-white tooth (RGBA). Reused on every round,
+ *                   scaled/rotated per `layout`.
+ *   backgroundSrc   Portrait 1080×1920 spotlight plate.
+ *                   TEMP: `/teeth/bg_spotlight_temp.webp`
+ *                   When the final plate lands, change this ONE path to
+ *                   `/teeth/bg_spotlight.png` (or `.webp`). Do not scatter
+ *                   the filename across components.
  *
- * Drop a 3D-rendered tooth later — same slot pattern as models.config:
- *   whiteSrc       9:16 pearl-white tooth PNG (transparent or matching bg)
- *   yellowSrc      OPTIONAL stained PNG, must be pixel-aligned with white
- *   teethMaskSrc   PNG (white = tooth). If omitted with whiteSrc, auto-mask
- *                  from alpha / brightness.
- *   zoom           { cx, cy, scale } — use { cx: 0.5, cy: 0.5, scale: 1 }
- *                  when the PNG is already 1080×1920.
+ * Optional per-round drop-in (same slots as models.config):
+ *   whiteSrc        full 1080×1920 scene PNG — skips compositing
+ *   yellowSrc       optional stained overlay, pixel-aligned with white
+ *   teethMaskSrc    PNG (white/alpha = tooth). Default mask = tooth alpha.
  *
- * If whiteSrc is set, `layout` is ignored and the PNG is used instead of
- * the procedural scene.
+ * Stain is always generated in code (ivory marble) and clipped to the
+ * tooth alpha, unless yellowSrc is set.
  */
 import type { ModelConfig } from "@/config/models.config";
 
 export type ToothLayoutId = "solo" | "pair" | "cluster";
+
+export const teethAssets = {
+  toothWhiteSrc: "/teeth/tooth_white.webp",
+  /** TEMP spotlight plate. Switch to `/teeth/bg_spotlight.png` when ready. */
+  backgroundSrc: "/teeth/bg_spotlight_temp.webp",
+} as const;
 
 export type ToothRoundConfig = Omit<ModelConfig, "whiteSrc"> & {
   whiteSrc?: string;

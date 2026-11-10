@@ -25,7 +25,7 @@ Hai UI mode (cùng flow lau, không timer/điểm):
 | Mode | URL | Mô tả |
 | --- | --- | --- |
 | Face (mặc định) | `/` hoặc `/?mode=face` | Người mẫu thật, không đổi |
-| Teeth only | `/?mode=teeth` | Chỉ icon răng 3D procedural, nền tối + spotlight xanh/tím |
+| Teeth only | `/?mode=teeth` | 3D pearl tooth PNG trên nền spotlight, stain marble code |
 
 Staff panel có dropdown **UI mode**. `gameConfig.defaultMode` trong `src/config/game.config.ts` (mặc định `"face"`).
 
@@ -61,7 +61,15 @@ Teeth-only headlines (`KHỬ VÀNG` / `LÀM SÁNG`) are also PLACEHOLDER in that
 
 ## Teeth-only assets
 
-Procedural by default (`src/lib/toothScene.ts`). To drop a 3D-rendered tooth later, edit **one file**: `src/config/teeth.config.ts` — same slots as models (`whiteSrc`, optional `yellowSrc`, `teethMaskSrc`). If `whiteSrc` is set, that PNG is used instead of the generated scene.
+Edit **one file**: `src/config/teeth.config.ts`.
+
+| Setting | File | Notes |
+| --- | --- | --- |
+| `teethAssets.toothWhiteSrc` | `/public/teeth/tooth_white.webp` | 3D pearl tooth, RGBA. Reused on solo/pair/cluster (scaled/rotated). |
+| `teethAssets.backgroundSrc` | `/public/teeth/bg_spotlight_temp.webp` | **TEMP** 1080×1920 spotlight plate. When the final bg lands, change this one path to `/teeth/bg_spotlight.png` (or `.webp`). |
+| Per-round `whiteSrc` | optional | Full 1080×1920 scene; skips compositing. |
+
+Ivory-marble stain is generated in code and **clipped to the tooth PNG alpha**. Clean % is sampled only where that alpha is opaque. Optional `yellowSrc` still works if a stained render is pixel-aligned.
 
 ## Secrets & data — none in this repo
 

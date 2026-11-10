@@ -102,7 +102,7 @@ export default function KioskGame() {
         const i = ((index % teethRounds.length) + teethRounds.length) % teethRounds.length;
         const round = teethRounds[i];
         setBootLabel(`Đang tải ${round.name}…`);
-        const baked = round.whiteSrc ? undefined : renderToothScene(round.layout);
+        const baked = round.whiteSrc ? undefined : await renderToothScene(round.layout);
         await engine.load(round, baked);
         modelIndexRef.current = i;
         setModelIndex(i);
