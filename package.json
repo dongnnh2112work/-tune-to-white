@@ -1,0 +1,35 @@
+{
+  "name": "tune-to-white",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Close Up TUNE TO WHITE — kiosk event game (LINKED)",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 43123",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0 --port 43123",
+    "lint": "eslint",
+    "postinstall": "node scripts/vendor-mediapipe.mjs",
+    "vendor:mediapipe": "node scripts/vendor-mediapipe.mjs",
+    "assets": "node scripts/prepare-assets.mjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.2",
+    "next": "^16.4.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@tailwindcss/postcss": "^4.3.5",
+    "@tailwindcss/turbopack": "^4.3.3",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.6",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3"
+  }
+}
