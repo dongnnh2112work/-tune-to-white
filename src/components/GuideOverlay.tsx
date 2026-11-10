@@ -1,8 +1,12 @@
 "use client";
 
-export function GuideOverlay({ visible }: { visible: boolean }) {
+import { PLACEHOLDER } from "@/config/placeholders.config";
+import type { UiMode } from "@/game/types";
+
+export function GuideOverlay({ visible, mode = "face" }: { visible: boolean; mode?: UiMode }) {
+  const teeth = mode === "teeth";
   return (
-    <div className={`guide-overlay ${visible ? "is-on" : ""}`} data-testid="guide-overlay">
+    <div className={`guide-overlay ${visible ? "is-on" : ""} ${teeth ? "teeth-mood" : ""}`} data-testid="guide-overlay">
       <div className="guide-card">
         <div className="guide-hand" aria-hidden>
           <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
@@ -14,8 +18,10 @@ export function GuideOverlay({ visible }: { visible: boolean }) {
             />
           </svg>
         </div>
-        <div className="guide-title">LAU VẾT Ố</div>
-        <div className="guide-body">Đưa tay theo vòng sáng, quét qua răng để làm trắng.</div>
+        <div className="guide-title">{teeth ? PLACEHOLDER.teethGuideTitle : "LAU VẾT Ố"}</div>
+        <div className="guide-body">
+          {teeth ? PLACEHOLDER.teethGuideBody : "Đưa tay theo vòng sáng, quét qua răng để làm trắng."}
+        </div>
       </div>
     </div>
   );

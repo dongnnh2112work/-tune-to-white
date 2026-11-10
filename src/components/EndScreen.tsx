@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { PLACEHOLDER } from "@/config/placeholders.config";
 import { STAGE } from "@/theme/theme";
 import { ParticleSystem } from "@/lib/particles";
+import type { UiMode } from "@/game/types";
 
-export function EndScreen({ visible }: { visible: boolean }) {
+export function EndScreen({ visible, mode = "face" }: { visible: boolean; mode?: UiMode }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export function EndScreen({ visible }: { visible: boolean }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const ps = new ParticleSystem();
+    ps.setPalette(mode === "teeth" ? "spot" : "brand");
     ps.seedFall(STAGE.width, STAGE.height, 280);
     let raf = 0;
     let last = performance.now();
@@ -29,10 +31,10 @@ export function EndScreen({ visible }: { visible: boolean }) {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [visible]);
+  }, [visible, mode]);
 
   return (
-    <div className={`end-screen ${visible ? "is-on" : ""}`} data-testid="end-screen">
+    <div className={`end-screen ${visible ? "is-on" : ""} ${mode === "teeth" ? "mood-teeth" : ""}`} data-testid="end-screen">
       <canvas ref={ref} width={STAGE.width} height={STAGE.height} className="end-particles" />
       <div className="end-content">
         <img src="/brand/logo_closeup.png" alt="Close Up White Now" />

@@ -14,7 +14,7 @@ type Particle = {
   b: number;
 };
 
-const FALL_PALETTE: [number, number, number][] = [
+const BRAND_PALETTE: [number, number, number][] = [
   [225, 6, 0],
   [255, 72, 58],
   [0, 196, 179],
@@ -24,12 +24,30 @@ const FALL_PALETTE: [number, number, number][] = [
   [255, 255, 255],
 ];
 
-function pickFallColor(): [number, number, number] {
-  return FALL_PALETTE[(Math.random() * FALL_PALETTE.length) | 0];
-}
+const SPOT_PALETTE: [number, number, number][] = [
+  [90, 170, 255],
+  [140, 200, 255],
+  [180, 110, 255],
+  [210, 160, 255],
+  [255, 255, 255],
+  [0, 196, 179],
+  [225, 6, 0],
+];
+
+export type ParticlePalette = "brand" | "spot";
 
 export class ParticleSystem {
   particles: Particle[] = [];
+  palette: ParticlePalette = "brand";
+
+  setPalette(p: ParticlePalette) {
+    this.palette = p;
+  }
+
+  private pick() {
+    const table = this.palette === "spot" ? SPOT_PALETTE : BRAND_PALETTE;
+    return table[(Math.random() * table.length) | 0];
+  }
 
   spawnWipe(x: number, y: number, n = 7) {
     for (let i = 0; i < n; i++) {
@@ -45,9 +63,9 @@ export class ParticleSystem {
         max: 0.35 + Math.random() * 0.35,
         size: stain ? 3 + Math.random() * 5 : 2 + Math.random() * 3,
         kind: stain ? "stain" : "sparkle",
-        r: stain ? 176 + Math.random() * 28 : 255,
-        g: stain ? 138 + Math.random() * 28 : 255,
-        b: stain ? 70 + Math.random() * 30 : 250,
+        r: stain ? (this.palette === "spot" ? 200 : 176) + Math.random() * 28 : this.palette === "spot" ? 160 : 255,
+        g: stain ? (this.palette === "spot" ? 170 : 138) + Math.random() * 28 : this.palette === "spot" ? 190 : 255,
+        b: stain ? (this.palette === "spot" ? 90 : 70) + Math.random() * 30 : 250,
       });
     }
   }
@@ -56,7 +74,7 @@ export class ParticleSystem {
     for (let i = 0; i < 48; i++) {
       const ang = Math.random() * Math.PI * 2;
       const spd = 80 + Math.random() * 260;
-      const [r, g, b] = pickFallColor();
+      const [r, g, b] = this.pick();
       this.particles.push({
         x,
         y,
@@ -89,7 +107,7 @@ export class ParticleSystem {
   }
 
   private pushFall(x: number, y: number) {
-    const [r, g, b] = pickFallColor();
+    const [r, g, b] = this.pick();
     this.particles.push({
       x,
       y,

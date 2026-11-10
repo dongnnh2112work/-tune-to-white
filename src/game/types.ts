@@ -1,5 +1,7 @@
 export type Phase = "boot" | "idle" | "guide" | "play" | "win" | "end";
 
+export type UiMode = "face" | "teeth";
+
 export type Point = { x: number; y: number };
 
 export type CursorState = {
@@ -25,4 +27,6 @@ export type DebugApi = {
   partialWipe: (fraction: number) => void;
   setMouse: (on: boolean) => void;
   getModelIndex: () => number;
+  getMode: () => UiMode;
+  setMode: (mode: UiMode) => void;
 };

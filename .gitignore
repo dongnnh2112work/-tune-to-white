@@ -17,6 +17,8 @@ playwright-report
 playwright/.cache
 /artifacts
 /uploads
+/ref_teeth*
+**/ref_teeth_only*
 /agent-tools
 AGENTS.md
 /public/mediapipe/wasm

@@ -1,11 +1,19 @@
 import { STAGE } from "@/theme/theme";
 import { gameConfig } from "@/config/game.config";
 import type { ModelConfig } from "@/config/models.config";
+import type { BakedScene, WipeAsset } from "@/game/wipeAsset";
 import { loadImage } from "@/lib/assets";
 import { generateStainLayer } from "@/lib/stain";
-import { resolveTeethMask, type TeethMask } from "@/lib/teethMask";
+import { maskFromCanvas, resolveTeethMask, type TeethMask } from "@/lib/teethMask";
 import { createCanvas } from "@/lib/geom";
 import { ParticleSystem } from "@/lib/particles";
+
+type ImageLike = HTMLImageElement | HTMLCanvasElement;
+
+function srcSize(src: ImageLike) {
+  if (src instanceof HTMLCanvasElement) return { w: src.width, h: src.height };
+  return { w: src.naturalWidth || src.width, h: src.naturalHeight || src.height };
+}
 
 export type ViewTransform = {
   scale: number;
@@ -18,8 +26,10 @@ export class WipeEngine {
   ctx: CanvasRenderingContext2D;
   readonly particles = new ParticleSystem();
 
-  private white: HTMLImageElement | null = null;
-  private yellow: HTMLImageElement | null = null;
+  private white: ImageLike | null = null;
+  private yellow: ImageLike | null = null;
+  private drawBase = false;
+  private magnetRadius = gameConfig.play.magnetRadius;
   private stain: HTMLCanvasElement | null = null;
   private mask: TeethMask | null = null;
   private erase: HTMLCanvasElement | null = null;
@@ -33,7 +43,7 @@ export class WipeEngine {
   private shining = 0;
   private brushRadius = gameConfig.play.brushRadius;
   private threshold = gameConfig.play.cleanThreshold;
-  private model: ModelConfig | null = null;
+  private model: WipeAsset | null = null;
   private lastWipeX = 0;
   private lastWipeY = 0;
 
@@ -95,7 +105,7 @@ export class WipeEngine {
     const dx = c.x - sx;
     const dy = c.y - sy;
     const d = Math.hypot(dx, dy);
-    const r = gameConfig.play.magnetRadius;
+    const r = this.magnetRadius;
     if (d < r && d > 1) {
       const k = gameConfig.play.magnetStrength * (1 - d / r);
       return { x: sx + dx * k, y: sy + dy * k };
@@ -103,13 +113,23 @@ export class WipeEngine {
     return { x: sx, y: sy };
   }
 
-  async load(model: ModelConfig) {
+  async load(model: WipeAsset, baked?: BakedScene) {
     this.model = model;
-    this.white = await loadImage(model.whiteSrc);
-    this.yellow = model.yellowSrc ? await loadImage(model.yellowSrc).catch(() => null) : null;
-    this.mask = await resolveTeethMask(model, this.white);
-    this.stain = generateStainLayer(this.white, this.mask.canvas, this.yellow);
-    const { canvas, ctx } = createCanvas(this.white.naturalWidth, this.white.naturalHeight);
+    this.particles.setPalette(model.particlePalette ?? "brand");
+    this.drawBase = Boolean(baked) && !model.whiteSrc;
+    if (baked) {
+      this.white = baked.white;
+      this.yellow = baked.yellow ?? null;
+      this.mask = maskFromCanvas(baked.mask);
+    } else {
+      if (!model.whiteSrc) throw new Error(`Missing whiteSrc for ${model.id}`);
+      this.white = await loadImage(model.whiteSrc);
+      this.yellow = model.yellowSrc ? await loadImage(model.yellowSrc).catch(() => null) : null;
+      this.mask = await resolveTeethMask(model as ModelConfig, this.white as HTMLImageElement);
+    }
+    this.stain = generateStainLayer(this.white, this.mask.canvas, this.yellow, model.stainLook ?? "enamel");
+    const { w, h } = srcSize(this.white);
+    const { canvas, ctx } = createCanvas(w, h);
     this.erase = canvas;
     this.eraseCtx = ctx;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -124,12 +144,12 @@ export class WipeEngine {
     this.computeView(model);
     this.brushRadius = model.brushSize ?? gameConfig.play.brushRadius;
     this.threshold = model.threshold ?? gameConfig.play.cleanThreshold;
+    this.magnetRadius = model.magnetRadius ?? gameConfig.play.magnetRadius;
   }
 
-  private computeView(model: ModelConfig) {
+  private computeView(model: WipeAsset) {
     if (!this.white || !this.mask) return;
-    const w = this.white.naturalWidth;
-    const h = this.white.naturalHeight;
+    const { w, h } = srcSize(this.white);
     const z = model.zoom;
     const cx = z?.cx ?? this.mask.cx / w;
     const cy = z?.cy ?? this.mask.cy / h;
@@ -244,6 +264,7 @@ export class WipeEngine {
     ctx.save();
     ctx.translate(this.view.ox, this.view.oy);
     ctx.scale(this.view.scale, this.view.scale);
+    if (this.drawBase) ctx.drawImage(this.white, 0, 0);
     const { canvas: tmp, ctx: tx } = this.ensureTmp();
     tx.clearRect(0, 0, tmp.width, tmp.height);
     tx.globalCompositeOperation = "source-over";
@@ -275,8 +296,7 @@ export class WipeEngine {
   private tmp: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null = null;
   private ensureTmp() {
     if (!this.white) throw new Error("no white");
-    const w = this.white.naturalWidth;
-    const h = this.white.naturalHeight;
+    const { w, h } = srcSize(this.white);
     if (!this.tmp || this.tmp.canvas.width !== w) this.tmp = createCanvas(w, h);
     return this.tmp;
   }

@@ -1,10 +1,11 @@
 "use client";
 
-import type { PlayStats } from "@/game/types";
+import type { PlayStats, UiMode } from "@/game/types";
 
 export function StaffPanel({
   open,
   mouseMode,
+  uiMode,
   threshold,
   brush,
   fps,
@@ -20,9 +21,11 @@ export function StaffPanel({
   onReset,
   onShowCam,
   onClose,
+  onUiMode,
 }: {
   open: boolean;
   mouseMode: boolean;
+  uiMode: UiMode;
   threshold: number;
   brush: number;
   fps: number;
@@ -38,6 +41,7 @@ export function StaffPanel({
   onReset: () => void;
   onShowCam: () => void;
   onClose: () => void;
+  onUiMode: (mode: UiMode) => void;
 }) {
   return (
     <aside className={`staff-panel ${open ? "is-on" : ""}`} data-testid="staff-panel">
@@ -67,6 +71,17 @@ export function StaffPanel({
         </b>
       </div>
       {cameraError && <p className="staff-warn">Camera: {cameraError} — mouse fallback</p>}
+      <label>
+        UI mode
+        <select
+          value={uiMode}
+          onChange={(e) => onUiMode(e.target.value as UiMode)}
+          data-testid="staff-ui-mode"
+        >
+          <option value="face">Face (default)</option>
+          <option value="teeth">Teeth only</option>
+        </select>
+      </label>
       <label className="staff-toggle">
         <input type="checkbox" checked={mouseMode} onChange={onToggleMouse} />
         Mouse / touch mode

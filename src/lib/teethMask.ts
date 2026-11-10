@@ -9,7 +9,7 @@ export type TeethMask = {
   cx: number;
   cy: number;
   radius: number;
-  source: "png" | "polygon" | "face" | "heuristic";
+  source: "png" | "polygon" | "face" | "heuristic" | "procedural";
 };
 
 const cache = new Map<string, TeethMask>();
@@ -201,6 +201,13 @@ function finish(
     radius: Math.max(24, radius),
     source,
   };
+}
+
+export function maskFromCanvas(canvas: HTMLCanvasElement, source: TeethMask["source"] = "procedural"): TeethMask {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("2d context unavailable");
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  return finish(canvas, data.data, canvas.width, canvas.height, source);
 }
 
 export function exportMaskPng(mask: TeethMask) {

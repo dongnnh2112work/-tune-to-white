@@ -67,6 +67,56 @@ test("full mouse playthrough + screenshots", async ({ page }) => {
   expect(phase).toBe("end");
 });
 
+test("teeth-only mode playthrough + screenshots", async ({ page }) => {
+  await page.goto("/?input=mouse&fast=1&mode=teeth");
+  await page.waitForFunction(() => Boolean(window.__TUNE__));
+  await waitPhase(page, "idle");
+  await page.waitForSelector('[data-testid="stage"][data-loaded="1"]');
+  await page.waitForTimeout(700);
+  const mode = await page.evaluate(() => window.__TUNE__!.getMode());
+  expect(mode).toBe("teeth");
+  await shot(page, "teeth-idle.png");
+
+  await page.locator('[data-testid="stage"]').click({ position: { x: 540, y: 960 } });
+  await waitPhase(page, "play");
+
+  const teeth = await page.evaluate(() => window.__TUNE__!.getTeethCentroid());
+  const stage = page.locator('[data-testid="stage"]');
+  const box = await stage.boundingBox();
+  expect(box).toBeTruthy();
+  const scale = (box!.width ?? 1080) / 1080;
+  const toScreen = (x: number, y: number) => ({
+    x: box!.x + x * scale,
+    y: box!.y + y * scale,
+  });
+
+  const park = toScreen(90, 160);
+  await page.mouse.move(park.x, park.y);
+  await page.evaluate(() => window.__TUNE__!.partialWipe(0.45));
+  await page.waitForTimeout(250);
+  await shot(page, "teeth-midwipe.png");
+
+  await page.evaluate(() => window.__TUNE__!.forceClean());
+  await waitPhase(page, "win");
+  await page.waitForTimeout(250);
+  await shot(page, "teeth-win-next.png");
+
+  const next = toScreen(540, 1700);
+  await page.mouse.move(next.x, next.y);
+  await waitPhase(page, "play");
+  await page.evaluate(() => window.__TUNE__!.forceClean());
+  await waitPhase(page, "win");
+  await page.mouse.move(next.x, next.y);
+  await waitPhase(page, "play");
+  await page.evaluate(() => window.__TUNE__!.forceClean());
+  await waitPhase(page, "win");
+  await page.mouse.move(next.x, next.y);
+  await waitPhase(page, "end");
+  await page.waitForTimeout(500);
+  await shot(page, "teeth-end.png");
+  expect(await page.evaluate(() => window.__TUNE__!.getPhase())).toBe("end");
+});
+
 test("mask tool overlays", async ({ page }) => {
   await page.goto("/tools/mask");
   await page.waitForSelector('[data-testid="mask-model1"]', { timeout: 60_000 });

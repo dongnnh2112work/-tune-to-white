@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { models } from "@/config/models.config";
+import { teethRounds } from "@/config/teeth.config";
 import { gameConfig } from "@/config/game.config";
 import { STAGE } from "@/theme/theme";
 import { WipeEngine } from "@/game/WipeEngine";
 import { readFlags } from "@/game/flags";
-import type { CursorState, Phase, PlayStats } from "@/game/types";
+import { renderToothScene } from "@/lib/toothScene";
+import type { CursorState, Phase, PlayStats, UiMode } from "@/game/types";
 import { useHandTracking } from "@/hooks/useHandTracking";
 import { usePointerInput } from "@/hooks/usePointerInput";
 import { bumpComplete, bumpPlay, readStats } from "@/lib/playLog";
@@ -22,6 +24,7 @@ const NEXT = { x: 390, y: 1648, w: 300, h: 120 };
 
 export default function KioskGame() {
   const flags = useRef(readFlags());
+  const modeRef = useRef<UiMode>(flags.current.mode);
   const engineRef = useRef<WipeEngine | null>(null);
   const hostRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -53,8 +56,9 @@ export default function KioskGame() {
   const [threshold, setThreshold] = useState(gameConfig.play.cleanThreshold);
   const [brush, setBrush] = useState(gameConfig.play.brushRadius);
   const [cleanUi, setCleanUi] = useState(0);
-  const [photoSrc, setPhotoSrc] = useState<string>(models[0].whiteSrc);
+  const [photoSrc, setPhotoSrc] = useState<string>("");
   const [photoXform, setPhotoXform] = useState("translate(0px, 0px) scale(1)");
+  const [mode, setMode] = useState<UiMode>(flags.current.mode);
 
   const [wantCamera, setWantCamera] = useState(false);
   const hands = useHandTracking(wantCamera);
@@ -94,20 +98,53 @@ export default function KioskGame() {
     async (index: number, nextPhase: Phase) => {
       const engine = engineRef.current;
       if (!engine) return;
-      const i = ((index % models.length) + models.length) % models.length;
-      setBootLabel(`Đang tải ${models[i].name}…`);
-      await engine.load(models[i]);
+      if (modeRef.current === "teeth") {
+        const i = ((index % teethRounds.length) + teethRounds.length) % teethRounds.length;
+        const round = teethRounds[i];
+        setBootLabel(`Đang tải ${round.name}…`);
+        const baked = round.whiteSrc ? undefined : renderToothScene(round.layout);
+        await engine.load(round, baked);
+        modelIndexRef.current = i;
+        setModelIndex(i);
+        if (round.whiteSrc) {
+          setPhotoSrc(round.whiteSrc);
+          const t = engine.transform;
+          setPhotoXform(`translate(${t.ox}px, ${t.oy}px) scale(${t.scale})`);
+        } else {
+          setPhotoSrc("");
+          setPhotoXform("none");
+        }
+      } else {
+        const i = ((index % models.length) + models.length) % models.length;
+        const round = models[i];
+        setBootLabel(`Đang tải ${round.name}…`);
+        await engine.load(round);
+        modelIndexRef.current = i;
+        setModelIndex(i);
+        setPhotoSrc(round.whiteSrc);
+        const t = engine.transform;
+        setPhotoXform(`translate(${t.ox}px, ${t.oy}px) scale(${t.scale})`);
+      }
       engine.draw();
       engine.setBrush(brushRef.current);
       engine.setThreshold(thresholdRef.current);
-      modelIndexRef.current = i;
-      setModelIndex(i);
-      setPhotoSrc(models[i].whiteSrc);
-      const t = engine.transform;
-      setPhotoXform(`translate(${t.ox}px, ${t.oy}px) scale(${t.scale})`);
       setPhaseBoth(nextPhase);
     },
     [setPhaseBoth],
+  );
+
+  const applyMode = useCallback(
+    (next: UiMode) => {
+      modeRef.current = next;
+      setMode(next);
+      flags.current.mode = next;
+      const url = new URL(window.location.href);
+      if (next === "teeth") url.searchParams.set("mode", "teeth");
+      else url.searchParams.delete("mode");
+      history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      void loadModel(0, "idle");
+    },
+    [loadModel],
   );
 
   useEffect(() => {
@@ -254,7 +291,8 @@ export default function KioskGame() {
           dwellRef.current = 0;
           setDwell(0);
           const next = modelIndexRef.current + 1;
-          if (next >= models.length) {
+          const total = modeRef.current === "teeth" ? teethRounds.length : models.length;
+          if (next >= total) {
             const s = bumpComplete();
             statsRef.current = s;
             setStats(s);
@@ -295,6 +333,8 @@ export default function KioskGame() {
     window.__TUNE__ = {
       getPhase: () => phaseRef.current,
       getModelIndex: () => modelIndexRef.current,
+      getMode: () => modeRef.current,
+      setMode: (next) => applyMode(next),
       getClean: () => engineRef.current?.clean ?? 0,
       getTeethCentroid: () => engineRef.current?.teethCentroidStage() ?? { x: 540, y: 960, radius: 80 },
       forceClean: () => {
@@ -322,7 +362,7 @@ export default function KioskGame() {
     return () => {
       delete window.__TUNE__;
     };
-  }, [loadModel, resetToIdle, setPhaseBoth]);
+  }, [applyMode, loadModel, resetToIdle, setPhaseBoth]);
 
   const onStagePointer = (e: React.PointerEvent) => {
     if (phaseRef.current === "idle") {
@@ -332,7 +372,7 @@ export default function KioskGame() {
   };
 
   return (
-    <div className="kiosk-shell" ref={hostRef} data-testid="kiosk-shell">
+    <div className={`kiosk-shell ${mode === "teeth" ? "ui-teeth" : ""}`} ref={hostRef} data-testid="kiosk-shell">
       <div
         className="stage"
         ref={(el) => {
@@ -343,32 +383,36 @@ export default function KioskGame() {
         data-testid="stage"
         data-phase={phase}
         data-model={modelIndex}
+        data-ui-mode={mode}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className="model-photo"
-          src={photoSrc}
-          alt=""
-          draggable={false}
-          style={{ transform: photoXform }}
-          onError={() => {
-            if (stageRef.current) stageRef.current.dataset.imgError = "1";
-          }}
-          onLoad={() => {
-            if (stageRef.current) stageRef.current.dataset.imgOk = "1";
-          }}
-        />
+        {photoSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="model-photo"
+            src={photoSrc}
+            alt=""
+            draggable={false}
+            style={{ transform: photoXform }}
+            onError={() => {
+              if (stageRef.current) stageRef.current.dataset.imgError = "1";
+            }}
+            onLoad={() => {
+              if (stageRef.current) stageRef.current.dataset.imgOk = "1";
+            }}
+          />
+        ) : null}
         <canvas ref={canvasRef} className="game-canvas" data-testid="game-canvas" />
-        <IdleOverlay visible={phase === "idle"} />
-        <GuideOverlay visible={phase === "guide"} />
+        <IdleOverlay visible={phase === "idle"} mode={mode} />
+        <GuideOverlay visible={phase === "guide"} mode={mode} />
         <WinOverlay visible={phase === "win"} dwell={dwell} label={gameConfig.nextLabel} />
-        <EndScreen visible={phase === "end"} />
+        <EndScreen visible={phase === "end"} mode={mode} />
         <LoadingScreen visible={phase === "boot"} label={bootLabel} />
-        <CursorRing ref={cursorEl} visible={phase !== "boot" && phase !== "end"} />
+        <CursorRing ref={cursorEl} visible={phase !== "boot" && phase !== "end"} mode={mode} />
       </div>
       <StaffPanel
         open={staffOpen}
         mouseMode={mouseMode}
+        uiMode={mode}
         threshold={threshold}
         brush={brush}
         fps={hands.fps}
@@ -397,6 +441,7 @@ export default function KioskGame() {
         onReset={() => void resetToIdle()}
         onShowCam={() => setShowCam((s) => !s)}
         onClose={() => setStaffOpen(false)}
+        onUiMode={applyMode}
       />
     </div>
   );

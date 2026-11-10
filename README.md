@@ -20,6 +20,15 @@ npm start            # http://127.0.0.1:43123
 
 Mở `/?input=mouse` nếu không có webcam. Staff panel: `Shift+S` hoặc phím `` ` ``.
 
+Hai UI mode (cùng flow lau, không timer/điểm):
+
+| Mode | URL | Mô tả |
+| --- | --- | --- |
+| Face (mặc định) | `/` hoặc `/?mode=face` | Người mẫu thật, không đổi |
+| Teeth only | `/?mode=teeth` | Chỉ icon răng 3D procedural, nền tối + spotlight xanh/tím |
+
+Staff panel có dropdown **UI mode**. `gameConfig.defaultMode` trong `src/config/game.config.ts` (mặc định `"face"`).
+
 ## Chrome kiosk (mini PC)
 
 1. Cắm webcam lên **đỉnh giữa** màn hình dọc 55–65". Dán vạch **STAND HERE** ~1–1.2 m.
@@ -47,6 +56,12 @@ End-screen lines **"WHITE NOW"** and **"Nụ cười trắng sáng — tức th�
 `src/config/placeholders.config.ts`
 
 Replace that file when the client signs off. Do not hard-code slogan text in overlays. `game.config.ts` re-exports the same values as `slogan.line1 / line2`. Palette/fonts: `src/theme/theme.ts`.
+
+Teeth-only headlines (`KHỬ VÀNG` / `LÀM SÁNG`) are also PLACEHOLDER in that file (`teethHeadlineA` / `teethHeadlineB`). Style-only — not client-approved copy. The Close Up training-doc page used as a look reference is **not** in this repo and must not be shipped.
+
+## Teeth-only assets
+
+Procedural by default (`src/lib/toothScene.ts`). To drop a 3D-rendered tooth later, edit **one file**: `src/config/teeth.config.ts` — same slots as models (`whiteSrc`, optional `yellowSrc`, `teethMaskSrc`). If `whiteSrc` is set, that PNG is used instead of the generated scene.
 
 ## Secrets & data — none in this repo
 

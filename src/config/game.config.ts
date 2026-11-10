@@ -4,6 +4,8 @@ export const gameConfig = {
   title: "TUNE TO WHITE",
   brand: "Close Up",
   agency: "LINKED",
+  /** Default kiosk UI. `/?mode=teeth` overrides. Face stays unchanged. */
+  defaultMode: "face" as "face" | "teeth",
   /**
    * End-screen slogan. Values come from `placeholders.config.ts`
    * (PLACEHOLDER — not client-approved). Edit that file, not overlays.
