@@ -35,6 +35,13 @@ export const gameConfig = {
     magnetRadius: 170,
     sampleSize: 128,
     wipeSampleHz: 8,
+    /**
+     * Stain intensity 0–1, applied live (staff slider).
+     * 1 = baked full layer. Teeth default is high so beige/marble
+     * reads from 2–3 m; face is a bit lower to stay like real plaque.
+     */
+    stainStrengthTeeth: 0.92,
+    stainStrengthFace: 0.8,
   },
   camera: {
     roi: { left: 0.12, top: 0.18, right: 0.88, bottom: 0.98 },

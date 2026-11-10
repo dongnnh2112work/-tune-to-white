@@ -41,6 +41,11 @@ export default function KioskGame() {
   const statsRef = useRef<PlayStats>(readStats());
   const thresholdRef = useRef(gameConfig.play.cleanThreshold);
   const brushRef = useRef(gameConfig.play.brushRadius);
+  const stainTeethRef = useRef(gameConfig.play.stainStrengthTeeth);
+  const stainFaceRef = useRef(gameConfig.play.stainStrengthFace);
+  const stainStrengthRef = useRef(
+    flags.current.mode === "teeth" ? gameConfig.play.stainStrengthTeeth : gameConfig.play.stainStrengthFace,
+  );
   const mouseModeRef = useRef(false);
   const cleanUiRef = useRef(0);
 
@@ -55,6 +60,9 @@ export default function KioskGame() {
   const [stats, setStats] = useState<PlayStats>(statsRef.current);
   const [threshold, setThreshold] = useState(gameConfig.play.cleanThreshold);
   const [brush, setBrush] = useState(gameConfig.play.brushRadius);
+  const [stainStrength, setStainStrength] = useState(
+    flags.current.mode === "teeth" ? gameConfig.play.stainStrengthTeeth : gameConfig.play.stainStrengthFace,
+  );
   const [cleanUi, setCleanUi] = useState(0);
   const [photoSrc, setPhotoSrc] = useState<string>("");
   const [photoXform, setPhotoXform] = useState("translate(0px, 0px) scale(1)");
@@ -128,16 +136,33 @@ export default function KioskGame() {
       engine.draw();
       engine.setBrush(brushRef.current);
       engine.setThreshold(thresholdRef.current);
+      engine.setStainStrength(stainStrengthRef.current);
       setPhaseBoth(nextPhase);
     },
     [setPhaseBoth],
   );
+
+  const applyStainStrength = useCallback((v: number, target?: UiMode) => {
+    const mode = target ?? modeRef.current;
+    const s = Math.max(0, Math.min(1, v));
+    if (mode === "teeth") stainTeethRef.current = s;
+    else stainFaceRef.current = s;
+    if (mode === modeRef.current) {
+      stainStrengthRef.current = s;
+      setStainStrength(s);
+      engineRef.current?.setStainStrength(s);
+    }
+  }, []);
 
   const applyMode = useCallback(
     (next: UiMode) => {
       modeRef.current = next;
       setMode(next);
       flags.current.mode = next;
+      const s = next === "teeth" ? stainTeethRef.current : stainFaceRef.current;
+      stainStrengthRef.current = s;
+      setStainStrength(s);
+      engineRef.current?.setStainStrength(s);
       const url = new URL(window.location.href);
       if (next === "teeth") url.searchParams.set("mode", "teeth");
       else url.searchParams.delete("mode");
@@ -349,6 +374,8 @@ export default function KioskGame() {
         mouseModeRef.current = on;
         setMouseMode(on);
       },
+      getStainStrength: () => stainStrengthRef.current,
+      setStainStrength: (s) => applyStainStrength(s),
       jump: (next, idx) => {
         if (typeof idx === "number") {
           void loadModel(idx, next);
@@ -362,7 +389,7 @@ export default function KioskGame() {
     return () => {
       delete window.__TUNE__;
     };
-  }, [applyMode, loadModel, resetToIdle, setPhaseBoth]);
+  }, [applyMode, applyStainStrength, loadModel, resetToIdle, setPhaseBoth]);
 
   const onStagePointer = (e: React.PointerEvent) => {
     if (phaseRef.current === "idle") {
@@ -415,6 +442,7 @@ export default function KioskGame() {
         uiMode={mode}
         threshold={threshold}
         brush={brush}
+        stainStrength={stainStrength}
         fps={hands.fps}
         clean={cleanUi}
         phase={phase}
@@ -438,6 +466,7 @@ export default function KioskGame() {
           setBrush(v);
           engineRef.current?.setBrush(v);
         }}
+        onStainStrength={(v) => applyStainStrength(v)}
         onReset={() => void resetToIdle()}
         onShowCam={() => setShowCam((s) => !s)}
         onClose={() => setStaffOpen(false)}

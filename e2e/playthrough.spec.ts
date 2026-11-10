@@ -117,6 +117,18 @@ test("teeth-only mode playthrough + screenshots", async ({ page }) => {
   expect(await page.evaluate(() => window.__TUNE__!.getPhase())).toBe("end");
 });
 
+test("staff panel stain slider", async ({ page }) => {
+  await page.goto("/?input=mouse&mode=teeth&staff=1");
+  await page.waitForFunction(() => Boolean(window.__TUNE__));
+  await waitPhase(page, "idle");
+  await page.waitForSelector('[data-testid="stage"][data-loaded="1"]');
+  await page.waitForSelector('[data-testid="staff-stain-strength"]');
+  const strength = await page.evaluate(() => window.__TUNE__!.getStainStrength());
+  expect(strength).toBeGreaterThan(0.5);
+  await page.waitForTimeout(400);
+  await shot(page, "staff-stain-slider.png");
+});
+
 test("mask tool overlays", async ({ page }) => {
   await page.goto("/tools/mask");
   await page.waitForSelector('[data-testid="mask-model1"]', { timeout: 60_000 });

@@ -46,6 +46,7 @@ export class WipeEngine {
   private model: WipeAsset | null = null;
   private lastWipeX = 0;
   private lastWipeY = 0;
+  private stainStrength = 1;
 
   constructor(canvas?: HTMLCanvasElement) {
     const made = createCanvas(STAGE.width, STAGE.height);
@@ -84,6 +85,12 @@ export class WipeEngine {
   }
   setThreshold(t: number) {
     this.threshold = t;
+  }
+  setStainStrength(s: number) {
+    this.stainStrength = Math.max(0, Math.min(1, s));
+  }
+  getStainStrength() {
+    return this.stainStrength;
   }
 
   imageToStage(ix: number, iy: number) {
@@ -272,7 +279,9 @@ export class WipeEngine {
     tx.globalCompositeOperation = "destination-out";
     tx.drawImage(this.erase, 0, 0);
     tx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = this.stainStrength;
     ctx.drawImage(tmp, 0, 0);
+    ctx.globalAlpha = 1;
 
     if (this.shining > 0) {
       const t = this.shining;

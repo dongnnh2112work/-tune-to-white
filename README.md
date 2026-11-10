@@ -71,6 +71,13 @@ Edit **one file**: `src/config/teeth.config.ts`.
 
 Ivory-marble stain is generated in code and **clipped to the tooth PNG alpha**. Clean % is sampled only where that alpha is opaque. Optional `yellowSrc` still works if a stained render is pixel-aligned.
 
+Stain intensity is **baked at full strength**, then faded live with `stainStrength` (0–1) so the staff slider does not regenerate pixels. Defaults in `src/config/game.config.ts`:
+
+| Key | Default | Mode |
+| --- | --- | --- |
+| `play.stainStrengthTeeth` | `0.92` | Teeth — beige/ivory-yellow marble, readable from 2–3 m |
+| `play.stainStrengthFace` | `0.80` | Face — yellow-ivory plaque, not cartoon orange |
+
 ## Secrets & data — none in this repo
 
 - **No API keys, tokens, passwords, `.env` secrets, or credentials** are stored here.
@@ -100,7 +107,8 @@ Placeholder cũ (illustration, không phải người thật) đã được thay
 
 ## Staff
 
-- Reset, mouse mode, threshold, brush, preview camera/FPS
+- Reset, mouse mode, threshold, brush, **stain intensity** (0–1, live), preview camera/FPS
+- Stain slider applies to the current UI mode (teeth / face keep their own values)
 - Đếm lượt `localStorage` key `tune-to-white-stats` — **không** lưu ảnh camera
 
 ## Test

@@ -29,4 +29,6 @@ export type DebugApi = {
   getModelIndex: () => number;
   getMode: () => UiMode;
   setMode: (mode: UiMode) => void;
+  getStainStrength: () => number;
+  setStainStrength: (s: number) => void;
 };

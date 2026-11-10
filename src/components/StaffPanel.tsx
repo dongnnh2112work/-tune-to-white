@@ -8,6 +8,7 @@ export function StaffPanel({
   uiMode,
   threshold,
   brush,
+  stainStrength,
   fps,
   clean,
   phase,
@@ -18,6 +19,7 @@ export function StaffPanel({
   onToggleMouse,
   onThreshold,
   onBrush,
+  onStainStrength,
   onReset,
   onShowCam,
   onClose,
@@ -28,6 +30,7 @@ export function StaffPanel({
   uiMode: UiMode;
   threshold: number;
   brush: number;
+  stainStrength: number;
   fps: number;
   clean: number;
   phase: string;
@@ -38,6 +41,7 @@ export function StaffPanel({
   onToggleMouse: () => void;
   onThreshold: (v: number) => void;
   onBrush: (v: number) => void;
+  onStainStrength: (v: number) => void;
   onReset: () => void;
   onShowCam: () => void;
   onClose: () => void;
@@ -106,6 +110,18 @@ export function StaffPanel({
           step={2}
           value={brush}
           onChange={(e) => onBrush(Number(e.target.value))}
+        />
+      </label>
+      <label>
+        Stain {stainStrength.toFixed(2)}
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={stainStrength}
+          onChange={(e) => onStainStrength(Number(e.target.value))}
+          data-testid="staff-stain-strength"
         />
       </label>
       <label className="staff-toggle">
